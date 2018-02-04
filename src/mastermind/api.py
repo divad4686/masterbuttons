@@ -25,12 +25,18 @@ GAME_FIELDS = API.model('GAME', {
     'game_pattern': PATTERN})
 
 
+def parse_pattern_list(pattern):
+    """ pattern is a list of strings with the colors.eg: ['GREEN','BLUE','RED','PURPLE']
+        returns a tuple with the colors from the Color enum """
+    return tuple(Color[color_string] for color_string in pattern)
+
+
 @API.route('/create', methods=["post"])
 class Game(Resource):
     @API.expect(GAME_FIELDS)
     def post(self):
         all_params = request.get_json()
-        game_pattern = tuple(map(lambda color: Color[color], all_params['game_pattern']))
+        game_pattern = parse_pattern_list(all_params['game_pattern'])
         id_game = uuid.uuid4()
         game_created = GameCreatedEvent(id_game, game_pattern)
 
@@ -53,7 +59,7 @@ class Play(Resource):
         all_params = request.get_json()
         id_game = uuid.UUID(all_params['id_game'])
         try:
-            played_pattern = tuple(map(lambda color: Color[color], all_params['played_pattern']))
+            played_pattern = parse_pattern_list(all_params['played_pattern'])
         except KeyError:
             return "We could not parse the color values in the request"
 

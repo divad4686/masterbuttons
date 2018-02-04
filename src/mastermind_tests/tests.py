@@ -5,6 +5,7 @@ from collections import namedtuple
 
 from src.mastermind.mastermind_logic import Color, calculate_move
 from src.mastermind.game_aggregate import GameStatus, create_game_status_agregate, GameCreatedEvent, make_move
+from src.mastermind.api import parse_pattern_list
 
 
 class Tests(unittest.TestCase):
@@ -82,6 +83,14 @@ class Tests(unittest.TestCase):
 
         game_status = create_game_status_agregate(events)
         self.assertEqual(game_status.status, GameStatus.FINISHED)
+
+    def test_input_pattern_deserealization(self):
+        played_pattern_string = ["GREEN", "BLUE", "RED", "PURPLE"]
+        pattern = parse_pattern_list(played_pattern_string)
+        self.assertEqual(pattern[0].name, Color.GREEN.name)
+        self.assertEqual(pattern[1].name, Color.BLUE.name)
+        self.assertEqual(pattern[2].name, Color.RED.name)
+        self.assertEqual(pattern[3].name, Color.PURPLE.name)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,13 @@
+version: '3.3'
+
+services:
+  tests:
+    image: mastermind.api.tests
+    build:
+      context: .
+      dockerfile: ${TESTS}/Dockerfile
+      args:
+        tests: ${TESTS}
+    environment:
+      mastermind_host: http://api
+    
