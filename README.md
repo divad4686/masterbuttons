@@ -9,3 +9,7 @@ Download the repository and execute run.sh, this will build the project, execute
 You can change the port mapping at docker-compose.yml
 
 The entry point of the application is src/mastermind/api.py
+
+
+You can also run a end to end test, by executing integration-tests.sh
+This will put the api up in a container, and then execute another test in a separate container, making requests to the main api using the docker-compose networking. 
