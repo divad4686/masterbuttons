@@ -43,6 +43,7 @@ class Tests(unittest.TestCase):
         events = []
         game_created = GameCreatedEvent(uuid.uuid4(), self.game_pattern)
         events.append(game_created)
+
         for move in self.moves:
             played_event = make_move(game_created.id_game, self.game_pattern, move)
             events.append(played_event)
@@ -60,6 +61,26 @@ class Tests(unittest.TestCase):
         self.assertEqual(game_status.game_pattern, game_created.game_pattern)
         self.assertEqual(len(game_status.plays_played), len(self.moves))
         self.assertEqual(game_status.plays_played[3].played_pattern, self.moves[3])
+        self.assertEqual(game_status.status, GameStatus.FINISHED)
+
+    def test_aggregate_states(self):
+        events = []
+        game_created = GameCreatedEvent(uuid.uuid4(), self.game_pattern)
+        events.append(game_created)
+
+        first_move = self.moves[0]
+
+        played_event = make_move(game_created.id_game, self.game_pattern, first_move)
+        events.append(played_event)
+
+        game_status = create_game_status_agregate(events)
+        self.assertEqual(game_status.status, GameStatus.PLAYING)
+
+        second_move = self.moves[-1]
+        played_event = make_move(game_created.id_game, self.game_pattern, second_move)
+        events.append(played_event)
+
+        game_status = create_game_status_agregate(events)
         self.assertEqual(game_status.status, GameStatus.FINISHED)
 
 
