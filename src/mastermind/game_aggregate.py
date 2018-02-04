@@ -1,6 +1,7 @@
 from enum import Enum
 from functools import reduce
 from collections import namedtuple
+from mastermind_logic import calculate_move
 
 GameCreatedEvent = namedtuple("GameCreatedEvent", "id_game game_pattern")
 PlayerPlayedEvent = namedtuple("PlayerPlayedEvent", "id_game played_pattern result")
@@ -33,3 +34,8 @@ def apply_event_game_status(game_status, event):
 
 def create_game_status_agregate(events):
     return reduce(apply_event_game_status, events, GameStatusAggregate(None, [], GameStatus.PLAYING))
+
+
+def make_move(id_game, game_pattern, played_pattern):
+    move_result = calculate_move(game_pattern, played_pattern)
+    return PlayerPlayedEvent(id_game, played_pattern, move_result)

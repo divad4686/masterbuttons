@@ -14,7 +14,7 @@ class Color(Enum):
 MoveResult = namedtuple('MoveResult', 'Black White')
 
 
-def make_move(game_pattern, played_pattern):
+def calculate_move(game_pattern, played_pattern):
     if len(game_pattern) != 4 or len(played_pattern) != 4:
         raise ValueError
     game_positions = list(game_pattern)

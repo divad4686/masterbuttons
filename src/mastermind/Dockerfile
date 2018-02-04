@@ -10,7 +10,7 @@ RUN pip install -r requirements.txt
 COPY ${api} ${api}/
 COPY ${tests} ${tests}/
 
-RUN python -m src.mastermind_tests.tests
+RUN PYTHONPATH=${api} python -m src.mastermind_tests.tests
 
 WORKDIR ${api}
 ENTRYPOINT [ "python","api.py" ]

@@ -2,9 +2,9 @@ import uuid
 from flask import Flask, request
 from flask_restplus import Resource, Api, fields
 
-from mastermind_logic import Color, make_move
-from game_aggregate import GameCreatedEvent, create_game_status_agregate, PlayerPlayedEvent
-from serialicer import serialize_game
+from mastermind_logic import Color
+from game_aggregate import GameCreatedEvent, create_game_status_agregate, make_move, GameStatus
+from serializer import serialize_game
 
 APP = Flask(__name__)
 API = Api(APP)
@@ -52,13 +52,22 @@ class Play(Resource):
     def post(self):
         all_params = request.get_json()
         id_game = uuid.UUID(all_params['id_game'])
-        played_pattern = tuple(map(lambda color: Color[color], all_params['played_pattern']))
+        try:
+            played_pattern = tuple(map(lambda color: Color[color], all_params['played_pattern']))
+        except KeyError:
+            return "We could not parse the color values in the request"
+
         game = GAMES[id_game]
         game_status = create_game_status_agregate(game)
-        result = make_move(game_status.game_pattern, played_pattern)
-        play_event = PlayerPlayedEvent(id_game, played_pattern, result)
+
+        if game_status.status == GameStatus.FINISHED:
+            return "This game is already finished"
+        if len(played_pattern) != len(game_status.game_pattern):
+            return "This is not the correct size for a play"
+
+        play_event = make_move(id_game, game_status.game_pattern, played_pattern)
         GAMES[id_game].append(play_event)
-        return result._asdict()
+        return play_event.result._asdict()
 
 
 MOVE_RESULT = API.model('Move result', {
@@ -73,7 +82,7 @@ class ResultPrint(fields.Raw):
 
 
 @API.route('/status', methods=["get"])
-class GameStatus(Resource):
+class GameStatusInfo(Resource):
     @API.doc(params={'id_game': 'UUID in 32 hexadecimal format'})
     def get(self):
         id_game = uuid.UUID(request.args.get('id_game'))

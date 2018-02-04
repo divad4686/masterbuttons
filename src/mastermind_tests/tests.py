@@ -3,8 +3,8 @@ import uuid
 from collections import namedtuple
 
 
-from src.mastermind.mastermind_logic import make_move, Color
-from src.mastermind.game_aggregate import GameStatus, create_game_status_agregate, GameCreatedEvent, PlayerPlayedEvent
+from src.mastermind.mastermind_logic import Color, calculate_move
+from src.mastermind.game_aggregate import GameStatus, create_game_status_agregate, GameCreatedEvent, make_move
 
 
 class Tests(unittest.TestCase):
@@ -19,7 +19,7 @@ class Tests(unittest.TestCase):
     def test_game_logic(self):
         def assert_game(game_pattern, move, expected_black, expected_white, test_number):
             error_msg = 'fail in test number: {0}'.format(test_number)
-            result = make_move(game_pattern, move)
+            result = calculate_move(game_pattern, move)
             self.assertEqual(result.Black, expected_black, msg=error_msg)
             self.assertEqual(result.White, expected_white, msg=error_msg)
             self.assertLessEqual(result.Black + result.White, 4, msg=error_msg)
@@ -37,21 +37,19 @@ class Tests(unittest.TestCase):
             assert_game(self.game_pattern, move.move, move.expected_black, move.expected_white, idx)
 
         with self.assertRaises(ValueError):
-            make_move([Color.RED], [Color.BLUE])
+            calculate_move([Color.RED], [Color.BLUE])
 
-    def test_events(self):
+    def test_game_aggregate(self):
         events = []
         game_created = GameCreatedEvent(uuid.uuid4(), self.game_pattern)
         events.append(game_created)
         for move in self.moves:
-            move_result = make_move(self.game_pattern, move)
-            played_event = PlayerPlayedEvent(game_created.id_game, move, move_result)
+            played_event = make_move(game_created.id_game, self.game_pattern, move)
             events.append(played_event)
 
         # This move should not affect the aggregate because the game is finished
         invalid_move = (Color.GREEN, Color.BLUE, Color.RED, Color.PURPLE)
-        move_result = make_move(self.game_pattern, invalid_move)
-        played_event = PlayerPlayedEvent(game_created.id_game, invalid_move, move_result)
+        played_event = make_move(game_created.id_game, self.game_pattern, invalid_move)
         events.append(played_event)
 
         # Multiple calls should be inmutable
