@@ -1,0 +1,13 @@
+version: '3.3'
+
+services:
+  api:
+    image: mastermind.api
+    build:
+      context: .
+      dockerfile: ${API}/Dockerfile
+      args:
+        api: ${API}
+        tests: ${TESTS}
+    ports:
+      - "80:80"
